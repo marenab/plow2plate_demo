@@ -27,6 +27,7 @@
           z-index: 1;
           top:  100px;
           left: 10px;
+          margin-left: 20px;
           border-radius: 3px;
           width: 120px;
           border: 1px solid rgba(0,0,0,0.4);
@@ -56,6 +57,45 @@
           color: #D1E3E5;
         }
         #menu a.active:hover {
+          background: #F2F3F4;
+        }
+        #toggle {
+          background: #fff;
+          position: absolute;
+          z-index: 1;
+          bottom:  0;
+          left: 0;
+          margin-left: 20px;
+          margin-bottom: 40px;
+          border-radius: 3px;
+          width: 230px;
+          border: 1px solid rgba(0,0,0,0.4);
+          font-family: 'Open Sans', sans-serif;
+        }
+        #toggle b {
+          font-size: 13px;
+          font-weight: 700;
+          color: #D1E3E5;
+          display: block;
+          margin: 0;
+          padding: 0;
+          padding: 10px;
+          text-decoration: none;
+          border-bottom: 1px solid rgba(0,0,0,0.25);
+          text-align: center;
+        }
+        #toggle b:last-child {
+          border: none;
+        }
+        #toggle b:hover {
+          background-color: #f8f8f8;
+          color: #404040;
+        }
+        #toggle b.active {
+          background-color: #11B0E5;≤
+          color: #D1E3E5;
+        }
+        #toggle b.active:hover {
           background: #F2F3F4;
         }
         .mapboxgl-popup-close-button {
@@ -113,6 +153,7 @@
       </div>
   </header>
 <nav id="menu"></nav>
+<nav id="toggle"></nav>
 <div id='map'></div>
 <div class='map-overlay' id='legend'></div>
 <script>
@@ -136,6 +177,7 @@
   var toggleableLayerIds = [ 'Farms', 'Businesses', 'Restaurants', 'Others'];
   for (var i = 0; i < toggleableLayerIds.length; i++) {
     var id = toggleableLayerIds[i];
+
       //click event for pop-ups to each layer
       map.on('click', toggleableLayerIds[i], function (e) {
         var coordinates = e.features[0].geometry.coordinates.slice();
@@ -150,6 +192,7 @@
           .setHTML('<h4>' + name + '</h4>' + '<b>'+ cohort + '</b>')
           .addTo(map);
       });
+
       //toggling functionality
       var link = document.createElement('a');
       link.href = '#';
@@ -171,13 +214,53 @@
       var layers = document.getElementById('menu');
       layers.appendChild(link);
   }
+    //add cohort toggle
+    var toggleableLayerIds = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Fall Truck Grantees', 'Not Disbursed', 'Declined'];
+  for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+      //click event for pop-ups to each layer
+      map.on('click', toggleableLayerIds[i], function (e) {
+        var coordinates = e.features[0].geometry.coordinates.slice();
+        var name = e.features[0].properties.Name;
+        var cohort = e.features[0].properties.Cohort;
+        var type = e.features[0].properties.Type;
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML('<h4>' + name + '</h4>' + '<b>'+ cohort + '</b>')
+          .addTo(map);
+      });
+      //toggling functionality
+      var link = document.createElement('b');
+      link.href = '#';
+      link.className = 'active';
+      link.textContent = id;
+      link.onclick = function (e) {
+        var clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
+        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+        if (visibility === 'visible') {
+          map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+          this.className = '';
+        } else {
+          this.className = 'active';
+          map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+        }
+      };
+      var layers = document.getElementById('toggle');
+      layers.appendChild(link);
+  }
+
     //add legend
-    var symbols = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Truck Grantees', 'Declined', 'Not disbursed'];
-var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
+    var labels = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Truck Grantees', 'Declined', 'Not Disbursed'];
+    var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
 
 
-    for (i = 0; i < symbols.length; i++) {
-  var symbol = symbols[i];
+    for (i = 0; i < labels.length; i++) {
+  var label = labels[i];
   var color = colors[i];
   var item = document.createElement('div');
   var key = document.createElement('span');
@@ -185,7 +268,7 @@ var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
   key.style.backgroundColor = color;
 
   var value = document.createElement('span');
-  value.innerHTML = symbol;
+  value.innerHTML = label;
   item.appendChild(key);
   item.appendChild(value);
   legend.appendChild(item);
