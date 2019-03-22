@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Plow to Plate</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
+    <script async defer src="https://api.mapbox.com/mapbox-assembly/v0.21.2/assembly.js"></script>
+    <link href="https://api.mapbox.com/mapbox-assembly/v0.21.2/assembly.min.css" rel="stylesheet">
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; z-index:-1; }
+        .map-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.8);
+        margin-right: 20px;
+        font-family: Arial, sans-serif;
+        overflow: auto;
+        border-radius: 3px;
+        }
+        #menu {
+          background: #fff;
+          position: absolute;
+          z-index: 1;
+          top:  100px;
+          left: 10px;
+          border-radius: 3px;
+          width: 120px;
+          border: 1px solid rgba(0,0,0,0.4);
+          font-family: 'Open Sans', sans-serif;
+        }
+        #menu a {
+          font-size: 13px;
+          font-weight: 700;
+          color: #D1E3E5;
+          display: block;
+          margin: 0;
+          padding: 0;
+          padding: 10px;
+          text-decoration: none;
+          border-bottom: 1px solid rgba(0,0,0,0.25);
+          text-align: center;
+        }
+        #menu a:last-child {
+          border: none;
+        }
+        #menu a:hover {
+          background-color: #f8f8f8;
+          color: #404040;
+        }
+        #menu a.active {
+          background-color: #11B0E5;≤
+          color: #D1E3E5;
+        }
+        #menu a.active:hover {
+          background: #F2F3F4;
+        }
+        .mapboxgl-popup-close-button {
+        display: none;
+        }
+        .mapboxgl-popup-content {
+          width: 250px;
+          max-height: 150px;
+          overflow: auto;
+        }
+        .mapboxgl-popup-content h4 {
+        background: #11B0E5;
+        color: #fff;
+        margin: 0;
+        display: block;
+        padding: 10px;
+        border-radius: 3px 3px 0 0;
+        margin-top: 0px;
+        }
+        
+        .mapboxgl-popup-content-wrapper {
+          padding: 1%;
+        }
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+        margin-top: 15px;
+        }
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+        border-bottom-color: #ffffff;
+        }
+
+        #legend {
+          padding: 10px;
+          background: #11B0E5;
+          color: #fff;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+          line-height: 18px;
+          height: 120px;
+          margin-bottom: 40px;
+          width: 260px;
+          z-index:1;
+        }
+        .legend-key {
+        display: inline-block;
+        border-radius: 20%;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+        }
+    </style>
+</head>
+<body class="prose">
+  <header class="bg-darken75 color-white h-auto-mm h60">
+      <div class='flex-parent flex-parent--space-between-main w-full'>
+        <div class="flex-child ml240 mt24 mb12"><h3>World Central Kitchen - Plow to Plate</h3></div>
+      </div>
+  </header>
+<nav id="menu"></nav>
+<div id='map'></div>
+<div class='map-overlay' id='legend'></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoibWFyZW5hYiIsImEiOiJjam42cXNpNjIwMmxlM3lwYmxuZXAwdzh3In0.gPwDgUG31QDzSFg2Gohmtw';
+    var map = new mapboxgl.Map({
+    attributionControl: false,
+    container: 'map', // container id
+    style: 'mapbox://styles/marenab/cjtj3dbmq1dhb1fmi74ej8n2i', // stylesheet location
+    center: [-66.4846, 18.2545], // starting position [lng, lat]
+    zoom: 8.7 // starting zoom
+  });
+    var hoverdStateID = null;
+    map.addControl(new mapboxgl.AttributionControl({
+        compact: true
+    }));
+    // Add zoom and rotation controls to the map.
+  //map.addControl(new mapboxgl.NavigationControl());
+      //function mapReset() {
+    //}
+  map.on('load', function(){
+  var toggleableLayerIds = [ 'Farms', 'Businesses', 'Restaurants', 'Others'];
+  for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+      //click event for pop-ups to each layer
+      map.on('click', toggleableLayerIds[i], function (e) {
+        var coordinates = e.features[0].geometry.coordinates.slice();
+        var name = e.features[0].properties.Name;
+        var cohort = e.features[0].properties.Cohort;
+        var type = e.features[0].properties.Type;
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML('<h4>' + name + '</h4>' + '<b>'+ cohort + '</b>')
+          .addTo(map);
+      });
+      //toggling functionality
+      var link = document.createElement('a');
+      link.href = '#';
+      link.className = 'active';
+      link.textContent = id;
+      link.onclick = function (e) {
+        var clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
+        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+        if (visibility === 'visible') {
+          map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+          this.className = '';
+        } else {
+          this.className = 'active';
+          map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+        }
+      };
+      var layers = document.getElementById('menu');
+      layers.appendChild(link);
+  }
+    //add legend
+    var symbols = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Truck Grantees', 'Declined', 'Not disbursed'];
+var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
+
+
+    for (i = 0; i < symbols.length; i++) {
+  var symbol = symbols[i];
+  var color = colors[i];
+  var item = document.createElement('div');
+  var key = document.createElement('span');
+  key.className = 'legend-key';
+  key.style.backgroundColor = color;
+
+  var value = document.createElement('span');
+  value.innerHTML = symbol;
+  item.appendChild(key);
+  item.appendChild(value);
+  legend.appendChild(item);
+}
+});
+</script>
+
+</body>
+</html>
