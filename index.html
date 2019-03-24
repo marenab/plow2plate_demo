@@ -25,22 +25,23 @@
           background: #fff;
           position: absolute;
           z-index: 1;
-          top:  100px;
-          left: 10px;
-          margin-left: 20px;
+          bottom:  0;
+          right: 0;
+          margin-right: 20px;
+          margin-bottom: 40px;
           border-radius: 3px;
           width: 120px;
           border: 1px solid rgba(0,0,0,0.4);
           font-family: 'Open Sans', sans-serif;
         }
         #menu a {
-          font-size: 13px;
-          font-weight: 700;
+          font-size: 12px;
+          font-weight: 800;
           color: #D1E3E5;
           display: block;
           margin: 0;
           padding: 0;
-          padding: 10px;
+          padding: 5px;
           text-decoration: none;
           border-bottom: 1px solid rgba(0,0,0,0.25);
           text-align: center;
@@ -68,34 +69,34 @@
           margin-left: 20px;
           margin-bottom: 40px;
           border-radius: 3px;
-          width: 230px;
+          width: 210px;
           border: 1px solid rgba(0,0,0,0.4);
           font-family: 'Open Sans', sans-serif;
         }
-        #toggle b {
-          font-size: 13px;
-          font-weight: 700;
+        #toggle a {
+          font-size: 12px;
+          font-weight: 800;
           color: #D1E3E5;
           display: block;
           margin: 0;
           padding: 0;
-          padding: 10px;
+          padding: 5px;
           text-decoration: none;
           border-bottom: 1px solid rgba(0,0,0,0.25);
-          text-align: center;
+          text-align: left;
         }
-        #toggle b:last-child {
+        #toggle a:last-child {
           border: none;
         }
-        #toggle b:hover {
+        #toggle a:hover {
           background-color: #f8f8f8;
           color: #404040;
         }
-        #toggle b.active {
+        #toggle a.active {
           background-color: #11B0E5;≤
           color: #D1E3E5;
         }
-        #toggle b.active:hover {
+        #toggle a.active:hover {
           background: #F2F3F4;
         }
         .mapboxgl-popup-close-button {
@@ -139,7 +140,8 @@
         }
         .legend-key {
         display: inline-block;
-        border-radius: 20%;
+        border-radius: 50%;
+        border: 1.5px solid white;
         width: 10px;
         height: 10px;
         margin-right: 5px;
@@ -155,7 +157,6 @@
 <nav id="menu"></nav>
 <nav id="toggle"></nav>
 <div id='map'></div>
-<div class='map-overlay' id='legend'></div>
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoibWFyZW5hYiIsImEiOiJjam42cXNpNjIwMmxlM3lwYmxuZXAwdzh3In0.gPwDgUG31QDzSFg2Gohmtw';
     var map = new mapboxgl.Map({
@@ -185,7 +186,7 @@
         var cohort = e.features[0].properties.Cohort;
         var type = e.features[0].properties.Type;
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            //coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
         new mapboxgl.Popup()
           .setLngLat(coordinates)
@@ -216,8 +217,11 @@
   }
     //add cohort toggle
     var toggleableLayerIds = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Fall Truck Grantees', 'Not Disbursed', 'Declined'];
+    var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
+
   for (var i = 0; i < toggleableLayerIds.length; i++) {
     var id = toggleableLayerIds[i];
+    var color = colors[i];
       //click event for pop-ups to each layer
       map.on('click', toggleableLayerIds[i], function (e) {
         var coordinates = e.features[0].geometry.coordinates.slice();
@@ -233,10 +237,16 @@
           .addTo(map);
       });
       //toggling functionality
-      var link = document.createElement('b');
+      var link = document.createElement('a');
       link.href = '#';
       link.className = 'active';
-      link.textContent = id;
+      var key = document.createElement('span');
+      key.className = 'legend-key';
+      key.style.backgroundColor = color;
+      link.appendChild(key);
+      var value = document.createElement('span');
+      value.innerHTML = id;
+      link.appendChild(value);
       link.onclick = function (e) {
         var clickedLayer = this.textContent;
         e.preventDefault();
@@ -255,24 +265,25 @@
   }
 
     //add legend
-    var labels = ['2018 Fall Grantees', '2018 Spring Summer Grantees', '2017 Truck Grantees', 'Declined', 'Not Disbursed'];
-    var colors = ['#9a02f2', '#11bb6c', '#b30522', '#817c79', '#fc7240'];
+    //var labels = ['Farms', 'Businesses', 'Restaurants', 'School', 'Butcher', 'Fishery', 'Association', 'Grocery', 'Rabbit'];
+    //var icons = ['PRfarm.svg', 'PRtruck.svg', 'PRrestaurant.svg', 'PRbook.svg', 'PRcow.svg', 'PRassociation.svg', 'PRgrocery.svg', 'PRrabbit.svg'];
 
 
-    for (i = 0; i < labels.length; i++) {
-  var label = labels[i];
-  var color = colors[i];
-  var item = document.createElement('div');
-  var key = document.createElement('span');
-  key.className = 'legend-key';
-  key.style.backgroundColor = color;
+    //for (i = 0; i < labels.length; i++) {
+  //var label = labels[i];
+  //var icon = icons[i];
+  //var item = document.createElement('div');
+  //var key = document.createElement('span');
+  //key.className = 'legend-key';
+  //key.style.img = icon;
 
-  var value = document.createElement('span');
-  value.innerHTML = label;
-  item.appendChild(key);
-  item.appendChild(value);
-  legend.appendChild(item);
-}
+  //var list = document.createElement('span');
+  //value.innerHTML = label;
+  //item.appendChild(key);
+  //legend.appendChild(list);
+  //legend.appendChild(item);
+  //from before script tag <div class='map-overlay' id='legend'></div>
+  //}
 });
 </script>
 
